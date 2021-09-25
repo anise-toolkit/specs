@@ -1,0 +1,21 @@
+namespace Anise.Time;
+
+// An epoch represents a date and time past the reference defined by the time system (defined for the full file).
+// In ANISE, an epoch is represented as the number of seconds past the reference epoch.
+// ANISE libraries **MUST** provide helper functions to convert dates between the language's native datetime representation (or a relevant structure if not available) into a double-double representation for the requested time system.
+// It is stored as a double-double. A double-double number is an unevaluated sum of two IEEE double precision numbers, capable of representing at least 106 bits of significand.
+// Description: https://en.wikipedia.org/w/index.php?title=Quadruple-precision_floating-point_format&oldid=1040957342#Double-double_arithmetic.
+// Mathematics for implementation: http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf
+struct Epoch {
+    e0: double;
+    e1: double;
+}
+
+// Specifies the time system of some epoch.
+// TDB: Barycentric Dynamical Time (IERS TDB) -- default time representation in ANISE
+// UTC: Universal Coordinated Time -- assumes ALL leap seconds until the requested date
+// TAI: Atomic International Time
+// TT: Terrestrial Time
+// GPS: Global Positioning System
+// SCLK: Spacecraft clock -- if used, then an ICD describing the clock model of the spacecraft must be provided
+enum TimeSystem:byte { TDB, UTC, TAI, TT, GPS, SCLK }
