@@ -1,0 +1,51 @@
+/*
+    ANISE
+    Copyright (C) 2021 Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+include "common.fbs";
+include "ephemeris.fbs";
+
+namespace Anise.Frame;
+
+// To represent a spheroid defined by a semi major axis (a) and its flattening (f),
+// compute its semi minor axis (c) knowing that f = (a-c)/a <=> c = a(1-f). Then, set
+// the semi median axis to the semi major axis.
+// This is well illustrated in https://en.wikipedia.org/wiki/Spheroid.
+// For a perfect sphere, set all axes to the same value.
+// table TriAxialEllipsoid {
+//     semi_major_axis_km: double;
+//     semi_median_axis_km: double;
+//     semi_minor_axis_km: double;
+// }
+
+// table CelestialConstants {
+//     // If the shape is unset, this object is considered fully virtual.
+//     shape: TriAxialEllipsoid;
+//     gravitational_parameter_km2_s2: double;
+// }
+
+// union Constants {
+//     spacecraft: SpacecraftConstants,
+//     celestial: CelestialConstants
+// }
+
+table Frame {
+    ephemeris: Ephemeris.Ephemeris;
+    // A generic map of constants. ANISE released data provides some guarantees on inheritance.
+    constants: Common.ConstantMap;
+    children: [Frame];
+}

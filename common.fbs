@@ -16,30 +16,38 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-include "time.fbs";
-include "frames.fbs";
-include "common.fbs";
-file_identifier "ANIS";
+namespace Anise.Common;
 
-namespace Anise;
-
-table Metadata {
-    publisher: string (required);
-    publication_date: Time.Epoch (required);
-    time_system: Time.System = 0;
-    comments: string;
+struct Vector3 {
+    x: double;
+    y: double;
+    z: double;
 }
 
-table Anise {
-  metadata: Metadata (required);
-  root: Frame.Frame (required);
-//   mana:short = 150;
-//   hp:short = 100;
-//   name:string;
-//   friendly:bool = false (deprecated, priority: 1);
-//   inventory:[ubyte];
-//   color:Color = Blue;
-//   test:Any;
+// A quaternion is stored as its 3-component unit vector first (each component as a 32-bit float) and its half-angle (w) as a 64-bit float.
+// As a unit vector, a 32-bit float should be (is?) sufficient to store a precise quaternion while saving space.
+struct Quaternion {
+    x: float;
+    y: float;
+    z: float;
+    w: double;
 }
 
-root_type Anise;
+table Constant {
+    value:double;
+    unit:string;
+    comment:string;
+}
+
+table ConstantMap {
+    keys:[string];
+    values:[Constant];
+}
+
+enum InterpolationKind:ubyte {
+    Chebyshev = 0,
+    Hermite = 1,
+    Lagrange = 2,
+    Polynomial = 3,
+    Trigonometric = 4, // Sometimes called Fourier Series interpolation
+}

@@ -7,8 +7,8 @@ namespace Anise.Time;
 // Description: https://en.wikipedia.org/w/index.php?title=Quadruple-precision_floating-point_format&oldid=1040957342#Double-double_arithmetic.
 // Mathematics for implementation: http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf
 struct Epoch {
-    e0: double;
-    e1: double;
+    hi: double;
+    lo: double;
 }
 
 // Specifies the time system of some epoch.
@@ -18,4 +18,4 @@ struct Epoch {
 // TT: Terrestrial Time
 // GPS: Global Positioning System
 // SCLK: Spacecraft clock -- if used, then an ICD describing the clock model of the spacecraft must be provided
-enum TimeSystem:byte { TDB, UTC, TAI, TT, GPS, SCLK }
+enum System:ubyte { TDB, UTC, TAI, TT, GPS, SCLK }
