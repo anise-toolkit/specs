@@ -45,9 +45,9 @@ table ConstantMap {
 }
 
 enum InterpolationKind:ubyte {
-    Chebyshev = 0,
-    Hermite = 1,
-    Lagrange = 2,
+    ChebyshevSeries = 0,
+    HermiteSeries = 1,
+    LagrangeSeries = 2,
     Polynomial = 3,
     Trigonometric = 4, // Sometimes called Fourier Series interpolation
 }

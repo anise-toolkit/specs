@@ -19,6 +19,7 @@
 include "time.fbs";
 include "frames.fbs";
 include "common.fbs";
+include "ephemeris.fbs";
 file_identifier "ANIS";
 
 namespace Anise;
@@ -32,7 +33,7 @@ table Metadata {
 
 table Anise {
   metadata: Metadata (required);
-  root: Frame.Frame (required);
+  ephemerides:[Ephemeris]
 //   mana:short = 150;
 //   hp:short = 100;
 //   name:string;
