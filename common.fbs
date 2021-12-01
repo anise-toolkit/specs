@@ -14,13 +14,12 @@ struct Vector3 {
     z: double;
 }
 
-// A quaternion is stored as its 3-component unit vector first (each component as a 32-bit float) and its half-angle (w) as a 64-bit float.
-// As a unit vector, a 32-bit float should be (is?) sufficient to store a precise quaternion while saving space.
+// A quaternion is stored as its half-angle (w) as a 64-bit float and its 3-component unit vector first (each component as a 64-bit float.
 struct Quaternion {
-    x: float;
-    y: float;
-    z: float;
     w: double;
+    x: double;
+    y: double;
+    z: double;
 }
 
 table Constant {

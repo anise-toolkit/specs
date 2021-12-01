@@ -10,6 +10,7 @@ include "time.fbs";
 include "frames.fbs";
 include "common.fbs";
 include "ephemeris.fbs";
+include "orientation.fbs";
 file_identifier "ANIS";
 
 namespace Anise;
@@ -30,14 +31,8 @@ table Anise {
   metadata: Metadata (required);
   ephemerides: [Ephemeris.Ephemeris];
   ephemeris_map: MapToIndex;
-  // orientations: [Orientation.Orientation];
-//   mana:short = 150;
-//   hp:short = 100;
-//   name:string;
-//   friendly:bool = false (deprecated, priority: 1);
-//   inventory:[ubyte];
-//   color:Color = Blue;
-//   test:Any;
+  orientations: [Orientation.Orientation];
+  orientation_map: MapToIndex;
 }
 
 root_type Anise;

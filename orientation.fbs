@@ -9,42 +9,59 @@
 include "common.fbs";
 include "time.fbs";
 
-namespace Anise.Ephemeris;
+namespace Anise.Orientation;
 
 /*
- * StateCoefficients defines all of the coefficients to interpolate any of the values of this state.
- * 
+ * OrientationCoefficients defines all of the coefficients to interpolate any of the values of this quaternion, body rates, and associated covariance.
+ * If the array is empty, it means the data for that parameter is non existent (this does NOT mean it is zero).
  */
-table StateCoefficients {
+table OrientationCoefficients {
+    // Interpolation validity
     usable_start_time_offset_cs: double;
     usable_end_time_offset_cs: double;
-    x: [double];
-    y: [double];
-    z: [double];
-    vx: [double];
-    vy: [double];
-    vz: [double];
-    cov_x_x: [double];
-    cov_y_x: [double];
-    cov_y_y: [double];
-    cov_z_x: [double];
-    cov_z_y: [double];
-    cov_z_z: [double];
-    cov_vx_x: [double];
-    cov_vx_y: [double];
-    cov_vx_z: [double];
-    cov_vx_vx: [double];
-    cov_vy_x: [double];
-    cov_vy_y: [double];
-    cov_vy_z: [double];
-    cov_vy_vx: [double];
-    cov_vy_vy: [double];
-    cov_vz_x: [double];
-    cov_vz_y: [double];
-    cov_vz_z: [double];
-    cov_vz_vx: [double];
-    cov_vz_vy: [double];
-    cov_vz_vz: [double];
+    // State information
+    quat_w: [double];
+    quat_x: [double];
+    quat_y: [double];
+    quat_z: [double];
+    rate_x: [double];
+    rate_y: [double];
+    rate_z: [double];
+    // Covariance information
+    cov_quat_w_quat_w: [double];
+
+    cov_quat_x_quat_w: [double];
+    cov_quat_x_quat_x: [double];
+    
+    cov_quat_y_quat_w: [double];
+    cov_quat_y_quat_x: [double];
+    cov_quat_y_quat_y: [double];
+    
+    cov_quat_z_quat_w: [double];
+    cov_quat_z_quat_x: [double];
+    cov_quat_z_quat_y: [double];
+    cov_quat_z_quat_z: [double];
+    
+    cov_rate_x_quat_w: [double];
+    cov_rate_x_quat_x: [double];
+    cov_rate_x_quat_y: [double];
+    cov_rate_x_quat_z: [double];
+    cov_rate_x_rate_x: [double];
+
+    cov_rate_y_quat_w: [double];
+    cov_rate_y_quat_x: [double];
+    cov_rate_y_quat_y: [double];
+    cov_rate_y_quat_z: [double];
+    cov_rate_y_rate_x: [double];
+    cov_rate_y_rate_y: [double];
+
+    cov_rate_z_quat_w: [double];
+    cov_rate_z_quat_x: [double];
+    cov_rate_z_quat_y: [double];
+    cov_rate_z_quat_z: [double];
+    cov_rate_z_rate_x: [double];
+    cov_rate_z_rate_y: [double];
+    cov_rate_z_rate_z: [double];
 }
 
 /*
@@ -65,7 +82,7 @@ table EqualTimeSteps {
      * 5. Initialize the proper interpolation scheme with t_prime as the requested interpolation time.
      */
     spline_duration_s: double;
-    coefficient_data: [StateCoefficients];
+    coefficient_data: [OrientationCoefficients];
 }
 
 /*
@@ -92,7 +109,7 @@ table UnequalTimeSteps {
     * available in the list of coefficient data.
     * These time entries are centiseconds (10 milliseconds) past the start_epoch (defined
     * in the parent Ephemeris object). Perform a binary search in this index to retrieve
-    * index for the desired epoch. Then, retrieve the StateCoefficients for that key.
+    * index for the desired epoch. Then, retrieve the OrientationCoefficients for that key.
     * Ensure that the desired epoch is within the usable start and end time offsets.
     * If the desired epoch is prior to that time, select the previous key and check again.
     * If the desired epoch is after that time, select the next key and check again.
@@ -114,7 +131,7 @@ table UnequalTimeSteps {
     * convert it to an equal-time-step trajectory.
     */
     spline_time_index_cs: [int64];
-    coefficient_data: [StateCoefficients];
+    coefficient_data: [OrientationCoefficients];
     /*
      * The minimum value of the time input to the interpolation function (often -1).
      */
@@ -134,18 +151,15 @@ union Interpolator {
 }
 
 /* 
- * Ephemeris provides a hierarchical structure for querying state data (position, velocity, and covariance matrix).
- * This structure enables O(1) access to any object defined in the ephemeris by querying its path.
- * All children objects **MUST** be defined with respect to their parents and in the same orientation.
- * For example, in the ephemeris path "Solar System Barycenter J2000" / "Earth-Moon Barycenter" / "Earth" / "ISS",
- * if J2000 is the orientation in which the E-M Barycenter is defined, the Earth must also be in J2000 and ISS must also be in J2000.
- XXX: Should the ephemeris provide the frame_path that way I could have "ISS" in ITRS as long as ITRS is a queryable path?
+ * Orientation stores orientation parameters (quaternion, body rates, covariance) with respect to its parent.
+ * In other words, _rotating_ a vector defined in the parent frame by the quaternion represented in this
+ * orientation structure will rotate that vector from the parent frame INTO this frame.
  */
-table Ephemeris {
+table Orientation {
     name: string (required);
     start_epoch: Time.Epoch (required); // End epoch is calculated on the fly
     interpolation_kind: Common.InterpolationKind;
     interpolator: Interpolator (required);
+    parent_hash: int32;
     constants: Common.ConstantMap;
-    children: [Ephemeris];
 }

@@ -13,32 +13,40 @@ namespace Anise.Ephemeris;
 
 /*
  * StateCoefficients defines all of the coefficients to interpolate any of the values of this state.
- * 
+ * If the array is empty, it means the data for that parameter is non existent (this does NOT mean it is zero).
  */
 table StateCoefficients {
+    // Interpolation validity
     usable_start_time_offset_cs: double;
     usable_end_time_offset_cs: double;
+    // State information
     x: [double];
     y: [double];
     z: [double];
     vx: [double];
     vy: [double];
     vz: [double];
+    // Covariance information
     cov_x_x: [double];
+
     cov_y_x: [double];
     cov_y_y: [double];
+    
     cov_z_x: [double];
     cov_z_y: [double];
     cov_z_z: [double];
+    
     cov_vx_x: [double];
     cov_vx_y: [double];
     cov_vx_z: [double];
     cov_vx_vx: [double];
+    
     cov_vy_x: [double];
     cov_vy_y: [double];
     cov_vy_z: [double];
     cov_vy_vx: [double];
     cov_vy_vy: [double];
+    
     cov_vz_x: [double];
     cov_vz_y: [double];
     cov_vz_z: [double];
@@ -134,18 +142,15 @@ union Interpolator {
 }
 
 /* 
- * Ephemeris provides a hierarchical structure for querying state data (position, velocity, and covariance matrix).
- * This structure enables O(1) access to any object defined in the ephemeris by querying its path.
- * All children objects **MUST** be defined with respect to their parents and in the same orientation.
- * For example, in the ephemeris path "Solar System Barycenter J2000" / "Earth-Moon Barycenter" / "Earth" / "ISS",
- * if J2000 is the orientation in which the E-M Barycenter is defined, the Earth must also be in J2000 and ISS must also be in J2000.
- XXX: Should the ephemeris provide the frame_path that way I could have "ISS" in ITRS as long as ITRS is a queryable path?
+ * Ephemeris stores Cartesian state data (position, velocity, covariance) with respect to its parent.
+ * In other words, _add_ a vector defined in the parent frame by the state represented in this
+ * orientation structure will translate that vector from the parent frame INTO this frame.
  */
 table Ephemeris {
     name: string (required);
     start_epoch: Time.Epoch (required); // End epoch is calculated on the fly
     interpolation_kind: Common.InterpolationKind;
     interpolator: Interpolator (required);
+    parent_hash: int32;
     constants: Common.ConstantMap;
-    children: [Ephemeris];
 }
