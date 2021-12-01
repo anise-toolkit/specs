@@ -130,7 +130,7 @@ table UnequalTimeSteps {
     /*
      * The maxmum value of the time input to the interpolation function (often +1)
      */
-    time_normalization_max: double = +1.0;
+    time_normalization_max: double = 1.0;
 }
 
 /*
