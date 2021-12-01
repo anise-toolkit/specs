@@ -31,9 +31,16 @@ table Metadata {
     comments: string;
 }
 
+table MapToIndex {
+  hash:[int32];
+  index:[uint16];
+}
+
 table Anise {
   metadata: Metadata (required);
-  ephemerides:[Ephemeris]
+  ephemerides: [Ephemeris.Ephemeris];
+  ephemeris_map: MapToIndex;
+  // orientations: [Orientation.Orientation];
 //   mana:short = 150;
 //   hp:short = 100;
 //   name:string;

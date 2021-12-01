@@ -21,10 +21,13 @@ include "time.fbs";
 
 namespace Anise.Ephemeris;
 
-// Defines all of the coefficients to interpolate any of the values of this state.
+/*
+ * StateCoefficients defines all of the coefficients to interpolate any of the values of this state.
+ * 
+ */
 table StateCoefficients {
-    usable_start_time_offset_s: double;
-    usable_end_time_offset_s: double;
+    usable_start_time_offset_cs: double;
+    usable_end_time_offset_cs: double;
     x: [double];
     y: [double];
     z: [double];
@@ -95,9 +98,9 @@ table EqualTimeSteps {
  */
 table UnequalTimeSteps {
    /*
-    * A pre-sorted list of all of the offsets from the start_epoch of the Ephemeris (in seconds)
+    * A pre-sorted list of all of the offsets from the start_epoch of the Ephemeris
     * available in the list of coefficient data.
-    * interpolated states. These time entries are seconds past the start_epoch (defined
+    * These time entries are centiseconds (10 milliseconds) past the start_epoch (defined
     * in the parent Ephemeris object). Perform a binary search in this index to retrieve
     * index for the desired epoch. Then, retrieve the StateCoefficients for that key.
     * Ensure that the desired epoch is within the usable start and end time offsets.
@@ -106,23 +109,30 @@ table UnequalTimeSteps {
     * If within usable time, call the appropriate interpolation function (using the parent's
     * interpolation_kind attribute) with each of the coefficients as the polynominal weights.
     *
-    * NOTE: The index is in unsigned integer of 32 bits because floating point values do not
+    * NOTE: The index is a signed integer of 64 bits because floating point values do not
     * have the total order property, therefore we cannot guarantee an order thereby preventing
-    * a binary search of said vector.
+    * a binary search of said vector. Further, it's as a signed integer to trivially support trajectories
+    * created with a forward and a backward propagation.
     *
     * NOTE: The index points to the start of the window. In theory, this should prevent the binary search
     * from having to seek to the previous set of data compared to a method where the index points to the middle of the window.
+    *
+    * NOTE: We store the data in centiseconds because experience has shown that, in some high fidelity scenarios,
+    * a variable-duration spline may last less than one second (even for only 8 states). In practice, this leads to
+    * a collision in the indexing if it were to be in seconds. Therefore, a LIMITATION of this structure is that
+    * a variable-duration spline may only be up to 497 days long. If your trajectory is longer than that, you should
+    * convert it to an equal-time-step trajectory.
     */
-    spline_time_index_s: [uint32];
+    spline_time_index_cs: [int64];
     coefficient_data: [StateCoefficients];
     /*
      * The minimum value of the time input to the interpolation function (often -1).
      */
-    time_normalization_min: double = -1;
+    time_normalization_min: double = -1.0;
     /*
      * The maxmum value of the time input to the interpolation function (often +1)
      */
-    time_normalization_max: double = +1;
+    time_normalization_max: double = +1.0;
 }
 
 /*
