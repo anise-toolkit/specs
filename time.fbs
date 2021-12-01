@@ -1,21 +1,32 @@
+/*
+ * ANISE Toolkit
+ * Copyright (C) 2021 Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 namespace Anise.Time;
 
-// An epoch represents a date and time past the reference defined by the time system (defined for the full file).
-// In ANISE, an epoch is represented as the number of seconds past the reference epoch.
-// ANISE libraries **MUST** provide helper functions to convert dates between the language's native datetime representation (or a relevant structure if not available) into a double-double representation for the requested time system.
-// It is stored as a double-double. A double-double number is an unevaluated sum of two IEEE double precision numbers, capable of representing at least 106 bits of significand.
-// Description: https://en.wikipedia.org/w/index.php?title=Quadruple-precision_floating-point_format&oldid=1040957342#Double-double_arithmetic.
-// Mathematics for implementation: http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf
+/*
+ * An epoch represents a date and time past the reference defined by the time system (defined for the full file).
+ * In ANISE, an epoch is represented as the number of seconds past the reference epoch.
+ * ANISE libraries **MUST** provide helper functions to convert dates between the language's native datetime representation (or a relevant structure if not available) into a double-double representation for the requested time system.
+ * It is stored as a double-double. A double-double number is an unevaluated sum of two IEEE double precision numbers, capable of representing at least 106 bits of significand.
+ * Description: https://en.wikipedia.org/w/index.php?title=Quadruple-precision_floating-point_format&oldid=1040957342#Double-double_arithmetic.
+ */
 struct Epoch {
     hi: double;
     lo: double;
 }
 
-// Specifies the time system of some epoch.
-// TDB: Barycentric Dynamical Time (IERS TDB) -- default time representation in ANISE
-// UTC: Universal Coordinated Time -- assumes ALL leap seconds until the requested date
-// TAI: Atomic International Time
-// TT: Terrestrial Time
-// GPS: Global Positioning System
-// SCLK: Spacecraft clock -- if used, then an ICD describing the clock model of the spacecraft must be provided
+/*
+ * Specifies the time system of some epoch.
+ * TDB: Barycentric Dynamical Time (IERS TDB) -- default time representation in ANISE
+ * UTC: Universal Coordinated Time -- assumes ALL leap seconds until the requested date
+ * TAI: Atomic International Time
+ * TT: Terrestrial Time
+ * GPS: Global Positioning System
+ * SCLK: Spacecraft clock -- if used, then an ICD describing the clock model of the spacecraft must be provided
+*/
 enum System:ubyte { TDB, UTC, TAI, TT, GPS, SCLK }
