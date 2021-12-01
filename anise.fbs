@@ -7,7 +7,6 @@
  */
 
 include "time.fbs";
-include "frames.fbs";
 include "common.fbs";
 include "ephemeris.fbs";
 include "orientation.fbs";
