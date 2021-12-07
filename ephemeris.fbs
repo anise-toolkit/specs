@@ -147,10 +147,38 @@ union Interpolator {
  * orientation structure will translate that vector from the parent frame INTO this frame.
  */
 table Ephemeris {
+    /*
+     * The name is used to generate the (almost) unique hash of this ephemeris.
+     */
     name: string (required);
-    start_epoch: Time.Epoch (required); // End epoch is calculated on the fly
+    /*
+     * The start epoch of this ephemeris. Note that if the ephemeris was built backward,
+     * then the start_epoch is actually the ending epoch, and you should navigate the
+     * interpolation splines to determine the actual start epoch.
+     * The end epoch is calculated in that way.
+     */
+    start_epoch: Time.Epoch (required);
+    /* 
+     * The kind of interpolation used, determines how to evaluate a parameter at a given time.
+     */
     interpolation_kind: Common.InterpolationKind;
+    /*
+     * An Ephemeris interpolation table which stores the actual data.
+     */
     interpolator: Interpolator (required);
+    /* 
+     * Hash of the parent ephemeris, e.g. if this object is defined with respect to object A,
+     * then the parent_hash will store the hash of object A.
+     */
     parent_hash: int32;
+    /* 
+     * Hash of the orientation in which the coefficients are defined. For example, if this object
+     * is defined in the IAU Earth orientation, then orientation_hash stores the hash of the IAU Earth
+     * orientation table.
+     */
+    orientation_hash: int32;
+    /*
+     * A map of constants. 
+     */
     constants: Common.ConstantMap;
 }
