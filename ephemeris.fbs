@@ -12,13 +12,28 @@ include "time.fbs";
 namespace Anise.Ephemeris;
 
 /*
- * StateCoefficients defines all of the coefficients to interpolate any of the values of this state.
+ * Spline defines all of the coefficients to interpolate any of the values of this state.
  * If the array is empty, it means the data for that parameter is non existent (this does NOT mean it is zero).
  */
-table StateCoefficients {
-    // Interpolation validity
-    usable_start_time_offset_cs: double;
-    usable_end_time_offset_cs: double;
+table Spline {
+    /*
+     * Interpolation validity start and end epochs.
+     *
+     * NOTE: that if the spline was generated backward, the duration may be negative.
+     * Compute the usable duration of this spline as follows:
+     * duration_in_seconds = spline.usable_end_state.epoch - spline.usable_start_epoch
+     *
+     * NOTE: this spline is defined without referencing its index in the ephemeris. In practice,
+     * this allows it to be generated on a separate threads and subsequently added to the binary treee
+     * representing the unequal time step ephemeris.
+     *
+     * NOTE: to determine the polynomial degree, peak at the length of each coordinate.
+     *
+     * NOTE: We store only the start epoch and duration as opposed to the full start state and full end state
+     * because a state is 27*64 bits of data whereas an epoch is only 2*64 bits, thereby saving 25*64 bits of data per spline.
+     */
+    usable_start_epoch: Time.Epoch (required);
+    usable_end_state: DiscreteState (required);
     // State information
     x: [double];
     y: [double];
@@ -56,6 +71,49 @@ table StateCoefficients {
 }
 
 /*
+ * DiscreteState defines a unique state. This is needed for appropriate termination state of a spline.
+ * Note that a value of strictly zero in this structure should be considered UNRELIABLE:
+ * it may have been set exactly to zero (unlikely but possible), or simply be defaulting to zero.
+ */
+struct DiscreteState {
+    epoch: Time.Epoch;
+    // State information
+    x: double;
+    y: double;
+    z: double;
+    vx: double;
+    vy: double;
+    vz: double;
+    // Covariance information
+    cov_x_x: double;
+
+    cov_y_x: double;
+    cov_y_y: double;
+    
+    cov_z_x: double;
+    cov_z_y: double;
+    cov_z_z: double;
+    
+    cov_vx_x: double;
+    cov_vx_y: double;
+    cov_vx_z: double;
+    cov_vx_vx: double;
+    
+    cov_vy_x: double;
+    cov_vy_y: double;
+    cov_vy_z: double;
+    cov_vy_vx:double;
+    cov_vy_vy: double;
+    
+    cov_vz_x: double;
+    cov_vz_y: double;
+    cov_vz_z: double;
+    cov_vz_vx: double;
+    cov_vz_vy: double;
+    cov_vz_vz: double;
+}
+
+/*
  * EqualTimeSteps defines an interpolated trajectory where each spline has the same duration, specified in seconds.
  * This method allows for O(1) access to any set of coefficients, thereby O(1) access to compute the position, and
  * optional velocity, of any ephemeris data.
@@ -67,13 +125,13 @@ table EqualTimeSteps {
      * To retrieve the appropriate index in the coefficient data, apply the following algorithm.
      * 0. Let _epoch_ be the desired epoch, and _start_epoch_ the start epoch of the parent structure.
      * 1. Compute the offset between the desired epoch and the start_epoch: ephem_offset <- desired_epoch - start_epoch
-     * 2. Compute the index in coefficient_data as: index <- floor( ephem_offset / spline_duration_s)
+     * 2. Compute the index in splines as: index <- floor( ephem_offset / spline_duration_s)
      * 3. Compute the time offset, in seconds, within that window: t_prime <- ephem_offset - index * spline_duration_s
      * 4. Retrieve the coefficient data at key `index`.
      * 5. Initialize the proper interpolation scheme with t_prime as the requested interpolation time.
      */
     spline_duration_s: double;
-    coefficient_data: [StateCoefficients];
+    splines: [Spline];
 }
 
 /*
@@ -100,7 +158,7 @@ table UnequalTimeSteps {
     * available in the list of coefficient data.
     * These time entries are centiseconds (10 milliseconds) past the start_epoch (defined
     * in the parent Ephemeris object). Perform a binary search in this index to retrieve
-    * index for the desired epoch. Then, retrieve the StateCoefficients for that key.
+    * index for the desired epoch. Then, retrieve the Spline for that key.
     * Ensure that the desired epoch is within the usable start and end time offsets.
     * If the desired epoch is prior to that time, select the previous key and check again.
     * If the desired epoch is after that time, select the next key and check again.
@@ -122,7 +180,7 @@ table UnequalTimeSteps {
     * convert it to an equal-time-step trajectory.
     */
     spline_time_index_cs: [int64];
-    coefficient_data: [StateCoefficients];
+    splines: [Spline];
     /*
      * The minimum value of the time input to the interpolation function (often -1).
      */
@@ -152,12 +210,18 @@ table Ephemeris {
      */
     name: string (required);
     /*
-     * The start epoch of this ephemeris. Note that if the ephemeris was built backward,
-     * then the start_epoch is actually the ending epoch, and you should navigate the
-     * interpolation splines to determine the actual start epoch.
-     * The end epoch is calculated in that way.
+     * The start state of this ephemeris. This data serves two main purposes.
+     * 1. The Epoch of the start_state is used to compute the index in the index in the spline and the start epoch of this ephemeris.
+     * 2. This data is returned when querying the very first state of a trajectory: the splines only store the final state of their spline.
+     *
+     * NOTE: if the ephemeris was built backward (cf. backward flag), then the start_epoch is actually the ending epoch, and you should
+     * navigate the interpolation splines to determine the actual start epoch.
      */
-    start_epoch: Time.Epoch (required);
+    start_state: DiscreteState (required);
+    /*
+     * A flag used to tell whether the trajectory was built backward, and if some, some logic is modified.
+     */
+    backward: bool = false;
     /* 
      * The kind of interpolation used, determines how to evaluate a parameter at a given time.
      */
