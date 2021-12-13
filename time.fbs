@@ -14,6 +14,8 @@ namespace Anise.Time;
  * ANISE libraries **MUST** provide helper functions to convert dates between the language's native datetime representation (or a relevant structure if not available) into a double-double representation for the requested time system.
  * It is stored as a double-double. A double-double number is an unevaluated sum of two IEEE double precision numbers, capable of representing at least 106 bits of significand.
  * Description: https://en.wikipedia.org/w/index.php?title=Quadruple-precision_floating-point_format&oldid=1040957342#Double-double_arithmetic.
+ *
+ * NOTE: Because Epoch is a structure, it may not contain a flatbuffer enum. Therefore, the time system used must be specified along with the reference epoch.
  */
 struct Epoch {
     hi: double;

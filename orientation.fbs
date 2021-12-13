@@ -21,19 +21,16 @@ table Spline {
      *
      * NOTE: that if the spline was generated backward, the duration may be negative.
      * Compute the usable duration of this spline as follows:
-     * duration_in_seconds = spline.usable_end_state.epoch - spline.usable_start_epoch
+     * duration_in_seconds = spline.usable_end_epoch - spline.usable_start_epoch
      *
      * NOTE: this spline is defined without referencing its index in the ephemeris. In practice,
      * this allows it to be generated on a separate threads and subsequently added to the binary treee
      * representing the unequal time step ephemeris.
      *
      * NOTE: to determine the polynomial degree, peak at the length of each coordinate.
-     *
-     * NOTE: We store only the start epoch and duration as opposed to the full start state and full end state
-     * because a state is 27*64 bits of data whereas an epoch is only 2*64 bits, thereby saving 25*64 bits of data per spline.
      */
     usable_start_epoch: Time.Epoch (required);
-    usable_end_state: DiscreteOrientation (required);
+    usable_end_epoch: Time.Epoch (required);
     // State information
     quat_w: [double];
     quat_x: [double];
@@ -77,59 +74,6 @@ table Spline {
     cov_rate_z_rate_x: [double];
     cov_rate_z_rate_y: [double];
     cov_rate_z_rate_z: [double];
-}
-
-/*
- * DiscreteOrientation defines a unique orientation, body rate, and associated covariance.
- * This is needed for appropriate termination state of a spline.
- * Note that a value of strictly zero in this structure should be considered UNRELIABLE:
- * it may have been set exactly to zero (unlikely but possible), or simply be defaulting to zero.
- */
-struct DiscreteOrientation {
-    epoch: Time.Epoch;
-    // State information
-    quat_w: double;
-    quat_x: double;
-    quat_y: double;
-    quat_z: double;
-    rate_x: double;
-    rate_y: double;
-    rate_z: double;
-    // Covariance information
-    cov_quat_w_quat_w: double;
-
-    cov_quat_x_quat_w: double;
-    cov_quat_x_quat_x: double;
-    
-    cov_quat_y_quat_w: double;
-    cov_quat_y_quat_x: double;
-    cov_quat_y_quat_y: double;
-    
-    cov_quat_z_quat_w: double;
-    cov_quat_z_quat_x: double;
-    cov_quat_z_quat_y: double;
-    cov_quat_z_quat_z: double;
-    
-    cov_rate_x_quat_w: double;
-    cov_rate_x_quat_x: double;
-    cov_rate_x_quat_y: double;
-    cov_rate_x_quat_z: double;
-    cov_rate_x_rate_x: double;
-
-    cov_rate_y_quat_w: double;
-    cov_rate_y_quat_x: double;
-    cov_rate_y_quat_y: double;
-    cov_rate_y_quat_z: double;
-    cov_rate_y_rate_x: double;
-    cov_rate_y_rate_y: double;
-
-    cov_rate_z_quat_w: double;
-    cov_rate_z_quat_x: double;
-    cov_rate_z_quat_y: double;
-    cov_rate_z_quat_z: double;
-    cov_rate_z_rate_x: double;
-    cov_rate_z_rate_y: double;
-    cov_rate_z_rate_z: double;
 }
 
 /*
@@ -229,14 +173,16 @@ table Orientation {
      */
     name: string (required);
     /*
-     * The start state of this orientation. This data serves two main purposes.
-     * 1. The Epoch of the start_state is used to compute the index in the index in the spline and the start epoch of this ephemeris.
-     * 2. This data is returned when querying the very first state of a trajectory: the splines only store the final state of their spline.
+     * The reference epoch of this orientation and associated time system (e.g. TDB, UTC, etc.).
+     * The reference epoch is used to compute the index in the index in the spline.
      *
-     * NOTE: if the orientation table was built backward (cf. backward flag), then the start_epoch is actually the ending epoch, and you should
-     * navigate the interpolation splines to determine the actual start epoch.
+     * NOTE: if the orientation table was built backward (cf. backward flag), then the ref_epoch is actually the ending epoch of this
+     * table, and you should navigate the interpolation splines to determine the actual start epoch.
+     *
+     * NOTE: _All_ splines must also be expressed in the same time system as the reference time system.
      */
-    start_state: DiscreteOrientation (required);
+    ref_epoch: Time.Epoch;
+    ref_system: Time.System;
     /*
      * A flag used to tell whether the trajectory was built backward, and if some, some logic is modified.
      */

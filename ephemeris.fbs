@@ -21,19 +21,16 @@ table Spline {
      *
      * NOTE: that if the spline was generated backward, the duration may be negative.
      * Compute the usable duration of this spline as follows:
-     * duration_in_seconds = spline.usable_end_state.epoch - spline.usable_start_epoch
+     * duration_in_seconds = spline.usable_end_epoch - spline.usable_start_epoch
      *
      * NOTE: this spline is defined without referencing its index in the ephemeris. In practice,
      * this allows it to be generated on a separate threads and subsequently added to the binary treee
      * representing the unequal time step ephemeris.
      *
      * NOTE: to determine the polynomial degree, peak at the length of each coordinate.
-     *
-     * NOTE: We store only the start epoch and duration as opposed to the full start state and full end state
-     * because a state is 27*64 bits of data whereas an epoch is only 2*64 bits, thereby saving 25*64 bits of data per spline.
      */
     usable_start_epoch: Time.Epoch (required);
-    usable_end_state: DiscreteState (required);
+    usable_end_epoch: Time.Epoch (required);
     // State information
     x: [double];
     y: [double];
@@ -68,49 +65,6 @@ table Spline {
     cov_vz_vx: [double];
     cov_vz_vy: [double];
     cov_vz_vz: [double];
-}
-
-/*
- * DiscreteState defines a unique state. This is needed for appropriate termination state of a spline.
- * Note that a value of strictly zero in this structure should be considered UNRELIABLE:
- * it may have been set exactly to zero (unlikely but possible), or simply be defaulting to zero.
- */
-struct DiscreteState {
-    epoch: Time.Epoch;
-    // State information
-    x: double;
-    y: double;
-    z: double;
-    vx: double;
-    vy: double;
-    vz: double;
-    // Covariance information
-    cov_x_x: double;
-
-    cov_y_x: double;
-    cov_y_y: double;
-    
-    cov_z_x: double;
-    cov_z_y: double;
-    cov_z_z: double;
-    
-    cov_vx_x: double;
-    cov_vx_y: double;
-    cov_vx_z: double;
-    cov_vx_vx: double;
-    
-    cov_vy_x: double;
-    cov_vy_y: double;
-    cov_vy_z: double;
-    cov_vy_vx:double;
-    cov_vy_vy: double;
-    
-    cov_vz_x: double;
-    cov_vz_y: double;
-    cov_vz_z: double;
-    cov_vz_vx: double;
-    cov_vz_vy: double;
-    cov_vz_vz: double;
 }
 
 /*
@@ -210,14 +164,16 @@ table Ephemeris {
      */
     name: string (required);
     /*
-     * The start state of this ephemeris. This data serves two main purposes.
-     * 1. The Epoch of the start_state is used to compute the index in the index in the spline and the start epoch of this ephemeris.
-     * 2. This data is returned when querying the very first state of a trajectory: the splines only store the final state of their spline.
+     * The reference epoch of this ephemeris and associated time system (e.g. TDB, UTC, etc.).
+     * The reference epoch is used to compute the index in the index in the spline.
      *
-     * NOTE: if the ephemeris was built backward (cf. backward flag), then the start_epoch is actually the ending epoch, and you should
-     * navigate the interpolation splines to determine the actual start epoch.
+     * NOTE: if the ephemeris was built backward (cf. backward flag), then the ref_epoch is actually the ending epoch of this
+     * ephemeris, and you should navigate the interpolation splines to determine the actual start epoch.
+     *
+     * NOTE: _All_ splines must also be expressed in the same time system as the reference time system.
      */
-    start_state: DiscreteState (required);
+    ref_epoch: Time.Epoch;
+    ref_system: Time.System;
     /*
      * A flag used to tell whether the trajectory was built backward, and if some, some logic is modified.
      */

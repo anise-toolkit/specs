@@ -8,20 +8,6 @@
 
 namespace Anise.Common;
 
-struct Vector3 {
-    x: double;
-    y: double;
-    z: double;
-}
-
-// A quaternion is stored as its half-angle (w) as a 64-bit float and its 3-component unit vector first (each component as a 64-bit float).
-struct Quaternion {
-    w: double;
-    x: double;
-    y: double;
-    z: double;
-}
-
 table Constant {
     value:double;
     unit:string;
