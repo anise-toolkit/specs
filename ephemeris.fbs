@@ -190,13 +190,13 @@ table Ephemeris {
      * Hash of the parent ephemeris, e.g. if this object is defined with respect to object A,
      * then the parent_hash will store the hash of object A.
      */
-    parent_hash: int32;
+    parent_hash: uint32;
     /* 
      * Hash of the orientation in which the coefficients are defined. For example, if this object
      * is defined in the IAU Earth orientation, then orientation_hash stores the hash of the IAU Earth
      * orientation table.
      */
-    orientation_hash: int32;
+    orientation_hash: uint32;
     /*
      * A map of constants. 
      */
