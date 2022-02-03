@@ -22,7 +22,7 @@ table Metadata {
 }
 
 table MapToIndex {
-  hash:[int32];
+  hash:[uint32];
   index:[uint16];
 }
 

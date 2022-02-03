@@ -199,7 +199,7 @@ table Orientation {
      * Hash of the parent orientation, e.g. if this object is defined with respect to object A,
      * then the parent_hash will store the hash of object A.
      */
-    parent_hash: int32;
+    parent_hash: uint32;
     /*
      * A map of constants. 
      */
