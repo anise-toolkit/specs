@@ -7,7 +7,7 @@ ANISE is an acronym for Attitude, Navigation, Instrument, Spacecraft, and Epheme
 
 The toolkit provides a new file definition to store references frames, their related ephemeris and attitude trajectory, and respective covariances. The toolkit also provides algorithms for the most basic querying and astrodynamics calculations similar to SPICE, and their implementations in a number of languages (Rust, Python).
 
-This toolkit is licensed in AGPLv3, whose terms you may read [here](./LICENSE). [One could argue](https://nyxspace.com/license/) that this license is business-friendly while ensuring that contributions to ANISE benefit the hard work by the [authors](./AUTHORS.md).
+This toolkit is licensed in the Mozilla Public License 2.0, whose terms you may read [here](./LICENSE).
 
 ## ANIS file
 The ANISE file specifications, extension `.anis`. Implementation should include this project as a submodule to ensure traceability.
